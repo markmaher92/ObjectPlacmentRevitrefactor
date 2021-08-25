@@ -38,14 +38,28 @@ namespace ObjectPlacementLandXml
                 foreach (var Alignment in Alignments.Alignment)
                 {
                     //stationing
-                    List<double> Stations = CreateStationing(ObjectPlacement.TransForm.DistanceBetweenStations,Alignment);
+                    List<double> Stations = CreateStationing(ObjectPlacement.TransForm.DistanceBetweenStations, Alignment);
                     List<LandXmlStationingObject> LandXmlAlignmentObjects = ExtractStationingObjects(Alignment, Stations);
-
 
                     LandxmlHeighElements = ExtractHeightElemenets(Alignment);
                     //Placment
                     ExtractPlacementPoints(Alignment, RevitPlacementPoints, Stations, LandXmlAlignmentObjects);
 
+                    using (Transaction T = new Transaction(Command.uidoc.Document, "Create Groups"))
+                    {
+                        T.Start();
+
+                        var ids = LandXmlAlignmentObjects.Select(E => E.RevitModelCurve?.Id);
+                        var FilteredIds = ids.Where(E => E != null);
+                        //ids.ToList().RemoveAll(EE => EE == null && EE.GetType() != typeof(ElementId));
+                        if (FilteredIds.Any())
+                        {
+                            Group G = Command.uidoc.Document.Create.NewGroup(ids.ToList());
+                            G.GroupType.Name = Alignment.name;
+                           // G.Name = Alignment.name;
+                        }
+                        T.Commit();
+                    }
                 }
             }
 
@@ -82,7 +96,9 @@ namespace ObjectPlacementLandXml
 
             XYZ EndPoint = HeightElements.Last().SegmentElement.GetEndPoint(1);
             XYZ ProfileEnd = new XYZ(alignment.length, EndPoint.Y, EndPoint.Z);
-            if (EndPoint.X != ProfileEnd.X)
+
+            var Distance = EndPoint.DistanceTo(ProfileEnd);
+            if (Math.Round(EndPoint.X, 7) != Math.Round(ProfileEnd.X, 7))
             {
                 var L = Autodesk.Revit.DB.Line.CreateBound(EndPoint, ProfileEnd);
                 HeightElements.Add(new HeightElements((HeightElements.Last().Range.Item2, alignment.length), L));
@@ -224,7 +240,7 @@ namespace ObjectPlacementLandXml
                             {
                                 continue;
                             }
-                            if (Station == (LandXmlObject.Station + LandXmlObject.GetLength()) && i != StationsToStudy.Count-1)
+                            if (Station == (LandXmlObject.Station + LandXmlObject.GetLength()) && i != StationsToStudy.Count - 1)
                             {
                                 continue;
                             }
@@ -235,7 +251,7 @@ namespace ObjectPlacementLandXml
                             RevitPlacementPoint.Add(PointAtStatation);
                             continue;
                         }
-                        
+
                     }
                 }
             }

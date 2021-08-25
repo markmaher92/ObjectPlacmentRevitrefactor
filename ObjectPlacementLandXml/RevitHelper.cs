@@ -15,6 +15,7 @@ namespace ObjectPlacementLandXml
         {
             List<(FamilyInstance,RevitPlacmenElement)> CreatedInstances = new List<(FamilyInstance, RevitPlacmenElement)>();
             string FamilyName = string.Empty;
+            RevitPlacmentPoints.RemoveAll(X => X == null);
             RevitPlacmentPoints = RevitPlacmentPoints.Distinct(new ComparePlacmentPoints()).ToList();
             RevitPlacmentPoints.Sort(delegate (RevitPlacmenElement c1, RevitPlacmenElement c2) { return c1.Station.CompareTo(c2.Station); });
             using (Transaction T = new Transaction(uiDoc.Document, "Place Objects"))
@@ -184,6 +185,10 @@ namespace ObjectPlacementLandXml
         {
             public new bool Equals(RevitPlacmenElement x, RevitPlacmenElement y)
             {
+                //if (x == null || y == null)
+                //{
+                //    return false;
+                //}
                 if (x.PlacementPoint.X == y.PlacementPoint.X && x.PlacementPoint.Y == y.PlacementPoint.Y && x.PlacementPoint.Z == y.PlacementPoint.Z)
                 {
                     return true;

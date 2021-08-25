@@ -5,43 +5,38 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ObjectPlacementLandXml"
         mc:Ignorable="d"
-        Title="ObjectPlacement" Height="314.59" Width="775.757">
+        Title="ObjectPlacement" Height="336.647" Width="773.939">
     <Grid>
         <Grid.ColumnDefinitions>
         </Grid.ColumnDefinitions>
-        <TextBox Height="24" Margin="287,0,11,139" TextWrapping="Wrap" Text="5" VerticalAlignment="Bottom" Name="StationDistanceTxt"/>
-        <TextBox Height="24" Margin="287,0,11,111" TextWrapping="Wrap" Text="0" VerticalAlignment="Bottom" Name="HorizontalDistancetext"/>
-        <Label Content="Distance Between Stations : m" Margin="10,0,561,137" Height="26" VerticalAlignment="Bottom"/>
-        <Label Content="Horitzonal Distance : mm" Margin="10,0,561,109" Height="26" VerticalAlignment="Bottom"/>
-        <Button Content="Run" Margin="0,0,11,8" Click="Run_click" Height="23" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="217" RenderTransformOrigin="0.513,0.8">
-            <Button.RenderTransform>
-                <TransformGroup>
-                    <ScaleTransform/>
-                    <SkewTransform AngleX="2.862"/>
-                    <RotateTransform/>
-                    <TranslateTransform X="-0.28"/>
-                </TransformGroup>
-            </Button.RenderTransform>
+        <TextBox Height="24" Margin="289,0,9,125" TextWrapping="Wrap" Text="5" VerticalAlignment="Bottom" Name="StationDistanceTxt"/>
+        <TextBox Height="24" Margin="289,0,9,97" TextWrapping="Wrap" Text="0" VerticalAlignment="Bottom" Name="HorizontalDistancetext"/>
+        <Label Content="Distance Between Stations : m" Margin="12,0,559,123" Height="26" VerticalAlignment="Bottom"/>
+        <Label Content="Horitzonal Distance : mm" Margin="12,0,559,95" Height="26" VerticalAlignment="Bottom"/>
+        <Button Content="Import Alignment" Margin="0,0,11,241" Click="Button_Click" Height="23" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="120" RenderTransformOrigin="0.513,0.8">
         </Button>
-        <Label Content="Elevation From Alignment : mm" Margin="10,0,561,83" Height="26" VerticalAlignment="Bottom"/>
-        <TextBox Height="24" Margin="287,0,11,82" TextWrapping="Wrap" Text="0" VerticalAlignment="Bottom" x:Name="ElevationTxt"/>
-        <TextBox Margin="141,0,56,226" TextWrapping="Wrap" Text="" x:Name="FamilyPath" Height="18" VerticalAlignment="Bottom" />
-        <Button Content="..." Margin="0,0,13,226" Click="RevitBrowserClick" HorizontalAlignment="Right" Width="38" Height="18" VerticalAlignment="Bottom"/>
-        <Label Content="Select Family Path" HorizontalAlignment="Left" Margin="10,0,0,217" Width="118" Height="27" VerticalAlignment="Bottom"/>
-        <Label Content="Rotation Angle in Plane: Degrees" Margin="10,0,561,52" Height="26" VerticalAlignment="Bottom"/>
-        <TextBox Height="24" Margin="287,0,11,51" TextWrapping="Wrap" Text="0" VerticalAlignment="Bottom" x:Name="DegreesTxt"/>
+        <Label Content="Elevation From Alignment : mm" Margin="12,0,559,69" Height="26" VerticalAlignment="Bottom"/>
+        <TextBox Height="24" Margin="289,0,9,68" TextWrapping="Wrap" Text="0" VerticalAlignment="Bottom" x:Name="ElevationTxt"/>
+        <TextBox Margin="143,0,54,212" TextWrapping="Wrap" Text="" x:Name="FamilyPath" Height="18" VerticalAlignment="Bottom" />
+        <Button Content="..." Margin="0,0,11,212" Click="RevitBrowserClick" HorizontalAlignment="Right" Width="38" Height="18" VerticalAlignment="Bottom"/>
+        <Label Content="Select Family Path" HorizontalAlignment="Left" Margin="12,0,0,203" Width="118" Height="27" VerticalAlignment="Bottom"/>
+        <Label Content="Rotation Angle in Plane: Degrees" Margin="12,0,559,38" Height="26" VerticalAlignment="Bottom"/>
+        <TextBox Height="24" Margin="289,0,9,37" TextWrapping="Wrap" Text="0" VerticalAlignment="Bottom" x:Name="DegreesTxt"/>
         <Label Content="Inclination Angle in XZ Plane: Degrees" Margin="10,0,548,34" Height="26" VerticalAlignment="Bottom" Visibility="Hidden"/>
         <TextBox Height="24" Margin="287,0,11,34" TextWrapping="Wrap" Text="0" VerticalAlignment="Bottom" x:Name="InclinationTxt" Visibility="Hidden"/>
-        <TextBox Margin="141,0,56,248" TextWrapping="Wrap" Text="" x:Name="LandXmlPath" Height="18" VerticalAlignment="Bottom" />
-        <Button Content="..." Margin="0,0,13,248" Click="LandXmlPathBut" HorizontalAlignment="Right" Width="38" Height="18" VerticalAlignment="Bottom"/>
-        <Label Content="Select LandXml Path" HorizontalAlignment="Left" Margin="10,0,0,244" Width="118" Height="27" VerticalAlignment="Bottom"/>
-        <Label Content="From Station" Margin="10,0,0,195" Height="26" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="78"/>
-        <Label Content="To Station" Margin="284,0,408,200" VerticalAlignment="Bottom" RenderTransformOrigin="4.871,-0.231"/>
-        <TextBox Margin="141,0,496,203" TextWrapping="Wrap" Text="" x:Name="PlacmentStartStationText" Height="18" VerticalAlignment="Bottom" />
-        <TextBox Margin="374,0,263,203" TextWrapping="Wrap" Text="" x:Name="PlacmentEndStationText" Height="18" VerticalAlignment="Bottom" RenderTransformOrigin="0.55,-0.13" />
-        <CheckBox Content="Rotate With Alignment" HorizontalAlignment="Left" Margin="319,0,0,175" VerticalAlignment="Bottom" Name="RotateWithAlignment"/>
-        <CheckBox Content="Create Alignment in model" HorizontalAlignment="Left" Margin="141,0,0,175" VerticalAlignment="Bottom" x:Name="CreateAlignmentInModelCheck"/>
-        <CheckBox Content="Create Stations At Alignment objects End" HorizontalAlignment="Left" Margin="470,0,0,175" VerticalAlignment="Bottom" x:Name="CreateStationsAtEndAndStartCheck"/>
+        <TextBox Margin="143,0,54,270" TextWrapping="Wrap" Text="" x:Name="LandXmlPath" Height="18" VerticalAlignment="Bottom" />
+        <Button Content="..." Margin="0,0,11,270" Click="LandXmlPathBut" HorizontalAlignment="Right" Width="38" Height="18" VerticalAlignment="Bottom"/>
+        <Label Content="Select LandXml Path" HorizontalAlignment="Left" Margin="12,0,0,266" Width="118" Height="27" VerticalAlignment="Bottom"/>
+        <Label Content="From Station" Margin="12,0,0,181" Height="26" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="78"/>
+        <Label Content="To Station" Margin="286,0,406,186" VerticalAlignment="Bottom" RenderTransformOrigin="4.871,-0.231"/>
+        <TextBox Margin="143,0,494,189" TextWrapping="Wrap" Text="" x:Name="PlacmentStartStationText" Height="18" VerticalAlignment="Bottom" />
+        <TextBox Margin="376,0,261,189" TextWrapping="Wrap" Text="" x:Name="PlacmentEndStationText" Height="18" VerticalAlignment="Bottom" RenderTransformOrigin="0.55,-0.13" />
+        <CheckBox Content="Rotate With Alignment" HorizontalAlignment="Left" Margin="144,0,0,161" VerticalAlignment="Bottom" Name="RotateWithAlignment"/>
+        <CheckBox Content="Create Alignment in model" HorizontalAlignment="Left" Margin="142,0,0,245" VerticalAlignment="Bottom" x:Name="CreateAlignmentInModelCheck"/>
+        <CheckBox Content="Create Stations At Alignment objects End" HorizontalAlignment="Left" Margin="377,0,0,162" VerticalAlignment="Bottom" x:Name="CreateStationsAtEndAndStartCheck"/>
+        <Button Content="Place Families" Margin="0,0,11,8" Click="Run_click" Height="23" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="120" RenderTransformOrigin="0.513,0.8">
+
+        </Button>
 
         <!--<GroupBox Header="Element Transform" HorizontalAlignment="Left" Height="163" Margin="0,90,0,0" VerticalAlignment="Top" Width="768"/>-->
     </Grid>

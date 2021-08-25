@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using Arc = Autodesk.Revit.DB.Arc;
 using Transform = Autodesk.Revit.DB.Transform;
 
@@ -16,6 +17,7 @@ namespace ObjectPlacementLandXml
         public double EndStation { get; set; }
         public object AlignmentSegmentElement { get; set; }
         public Autodesk.Revit.DB.Curve RevitSegmentElement { get; set; }
+        public Autodesk.Revit.DB.ModelCurve RevitModelCurve { get; set; }
 
         public Alignment Alignment { get; set; }
 
@@ -26,7 +28,16 @@ namespace ObjectPlacementLandXml
             AlignmentSegmentElement = alignmentElement;
             EndStation = station + this.GetLength();
             Alignment = alignment;
-            CreateRevitElement();
+            try
+            {
+                CreateRevitElement();
+
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(e.ToString());
+            }
+
         }
 
         private void CreateRevitElement()
@@ -43,7 +54,7 @@ namespace ObjectPlacementLandXml
                         var ConvertedPointStart = RevitPlacmenElement.ConvertPointToInternal(this.GetStartPoint());
                         var ConvertedEndPoint = RevitPlacmenElement.ConvertPointToInternal(this.GetEndPoint());
                         Autodesk.Revit.DB.Line ConvrtedLine = Autodesk.Revit.DB.Line.CreateBound(ConvertedPointStart, ConvertedEndPoint);
-                        CreateRevitElementInRevit(ConvrtedLine);
+                        RevitModelCurve  = CreateRevitElementInRevit(ConvrtedLine);
                     }
                     catch (Exception)
                     {
@@ -51,6 +62,7 @@ namespace ObjectPlacementLandXml
                     }
                     // Create a ModelArc element using the created geometry arc and sketch plane
                 }
+
             }
             if (this.AlignmentSegmentElement is IrregularLine)
             {
@@ -75,7 +87,7 @@ namespace ObjectPlacementLandXml
                         var ConvertedEndPoint = RevitPlacmenElement.ConvertPointToInternal(this.GetEndPoint());
                         var ConvertedRadius = RevitPlacmenElement.ConvertDoubleToInternal(Radius);
                         Arc ConcertedCurve = CreateArc(ConvertedPointStart, ConvertedEndPoint, ConvertedRadius, (bool)false);
-                        CreateRevitElementInRevit(ConcertedCurve);
+                        RevitModelCurve = CreateRevitElementInRevit(ConcertedCurve);
                     }
                     catch (Exception)
                     {
@@ -104,7 +116,7 @@ namespace ObjectPlacementLandXml
                         }
                         List<double> Weights = Enumerable.Repeat(1.0, ConvertedPoints.Count).ToList();
                         var ConvertedNurbsCurve = NurbSpline.CreateCurve(ConvertedPoints, Weights);
-                        CreateRevitElementInRevit(ConvertedNurbsCurve);
+                        RevitModelCurve = CreateRevitElementInRevit(ConvertedNurbsCurve);
                     }
                     catch (Exception)
                     {
@@ -122,7 +134,7 @@ namespace ObjectPlacementLandXml
 
         }
 
-        private static void CreateRevitElementInRevit(Autodesk.Revit.DB.Curve geomLine)
+        private static ModelCurve CreateRevitElementInRevit(Autodesk.Revit.DB.Curve geomLine)
         {
             // var OriginShit = geomLine.ComputeDerivatives(0, true);
             //var normal = OriginShit.BasisZ;
@@ -131,12 +143,16 @@ namespace ObjectPlacementLandXml
             // XYZ normal = new XYZ(0, 1, 0);
             var Origin = geomLine.GetEndPoint(0);
 
-            Plane geomPlane = Plane.CreateByNormalAndOrigin(XYZ.BasisZ, Origin);
+            //Plane geomPlane = Plane.CreateByNormalAndOrigin(XYZ.BasisZ, Origin);
+            Plane geomPlane = Plane.CreateByNormalAndOrigin(XYZ.BasisZ, new XYZ(0, 0, 0));
             // Create a sketch plane in current document
             SketchPlane sketch = SketchPlane.Create(Command.uidoc.Document, geomPlane);
 
+            ElementTransformUtils.MoveElement(Command.uidoc.Document, sketch.Id, Origin);
             // Create a ModelLine element using the created geometry line and sketch plane
-            var line = Command.uidoc.Document.Create.NewModelCurve(geomLine, sketch);
+            ModelCurve line = Command.uidoc.Document.Create.NewModelCurve(geomLine, sketch);
+
+            return line;
         }
 
         private Autodesk.Revit.DB.NurbSpline CreateaSpiral(Spiral Sp)
@@ -338,7 +354,7 @@ namespace ObjectPlacementLandXml
         public RevitPlacmenElement GetPointAtStation(double StationToStudy)
         {
             RevitPlacmenElement PointElement = null;
-            if (this.AlignmentSegmentElement is Line)
+            if (this.AlignmentSegmentElement is Line && this.RevitSegmentElement != null)
             {
                 XYZ Point = (this.RevitSegmentElement as Autodesk.Revit.DB.Line).Evaluate(StationToStudy - Station, false);
                 XYZ NextPoint = (this.RevitSegmentElement as Autodesk.Revit.DB.Line).Evaluate(StationToStudy + 0.0001 - Station, false);
@@ -355,7 +371,7 @@ namespace ObjectPlacementLandXml
                 //  PointElement = new RevitPlacmenElement(Point, StationToStudy, this.Alignment);
 
             }
-            if (this.AlignmentSegmentElement is Curve)
+            if (this.AlignmentSegmentElement is Curve && this.RevitSegmentElement != null)
             {
                 #region
                 //double StationParam;
@@ -380,9 +396,9 @@ namespace ObjectPlacementLandXml
                 //}
 
                 double StationParam;
-                StationParam = 1- (((StationToStudy - this.Station)) / this.GetLength());
+                StationParam = 1 - (((StationToStudy - this.Station)) / this.GetLength());
                 XYZ Point = (this.RevitSegmentElement as Autodesk.Revit.DB.Arc).Evaluate(StationParam, true);
-                var NextStationParam = 1-(((StationToStudy + 0.01 - this.Station)) / this.GetLength());
+                var NextStationParam = 1 - (((StationToStudy + 0.01 - this.Station)) / this.GetLength());
                 if (NextStationParam < 0)
                 {
                     NextStationParam = -NextStationParam;
@@ -394,7 +410,7 @@ namespace ObjectPlacementLandXml
                 var AxisStationParam = 1 - (((StationToStudy + 0.01 - this.Station)) / this.GetLength());
                 if (AxisStationParam < 0)
                 {
-                     AxisStationParam = -AxisStationParam;
+                    AxisStationParam = -AxisStationParam;
                 }
                 var AxisRotationPoint = (this.RevitSegmentElement as Autodesk.Revit.DB.Arc).Evaluate(AxisStationParam, true);
                 var SimplfiedAxis = Autodesk.Revit.DB.Line.CreateBound(Point, AxisRotationPoint);
@@ -406,7 +422,7 @@ namespace ObjectPlacementLandXml
 
 
             }
-            if (this.AlignmentSegmentElement is Spiral)
+            if (this.AlignmentSegmentElement is Spiral && this.RevitSegmentElement != null)
             {
                 double StationParam = (StationToStudy - this.Station) / this.GetLength();
                 XYZ Point = (this.RevitSegmentElement as NurbSpline).Evaluate((StationToStudy - this.Station), false);
@@ -476,6 +492,12 @@ namespace ObjectPlacementLandXml
             double s = largeSagitta
               ? radius + Math.Sqrt(radius * radius - d * d) // sagitta large
               : radius - Math.Sqrt(radius * radius - d * d); // sagitta small
+
+            if (double.IsNaN(s))
+            {
+                return null;
+            }
+
 
             var PX = Transform.CreateRotation(XYZ.BasisZ, 0.5 * Math.PI);
             var PX2 = v.Normalize();

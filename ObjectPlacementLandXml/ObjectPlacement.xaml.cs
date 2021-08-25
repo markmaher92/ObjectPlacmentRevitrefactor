@@ -21,6 +21,7 @@ namespace ObjectPlacementLandXml
     public partial class ObjectPlacement : Window
     {
         public static ElementTransformParams TransForm { get; set; }
+        public List<RevitPlacmenElement> RevitPlaceMentPoints { get; set; }
         public ObjectPlacement()
         {
             InitializeComponent();
@@ -28,10 +29,9 @@ namespace ObjectPlacementLandXml
 
         private void Run_click(object sender, RoutedEventArgs e)
         {
-           TransForm = ExtractTransformParameters();
-            var RevitPlaceMentPoints = LandXmlParser.ParseLandXml(LandXmlPath.Text);
+            TransForm = ExtractTransformParameters();
+            RevitPlaceMentPoints = LandXmlParser.ParseLandXml(LandXmlPath.Text);
 
-           
             ParameterValues W = new ParameterValues(RevitPlaceMentPoints, FamilyPath.Text, TransForm);
             W.ShowDialog();
             //RevitHelper.PlaceRevitFamilies(RevitPlaceMentPoints, uiDoc, FamilyPath.Text);
@@ -66,24 +66,15 @@ namespace ObjectPlacementLandXml
 
             TransFormParams.StationToStartFrom = ExtractStationPlacmentStart();
             TransFormParams.StationToEndAt = ExtractStationPlacmentEnd();
-            
+
             return TransFormParams;
         }
 
-        //public double ExtractStationDisntace()
-        //{
-        //    if (string.IsNullOrEmpty(this.StationDistanceTxt.Text))
-        //    {
-        //        this.StationDistanceTxt.Text = 0.ToString();
-        //    }
-        //    Stationincrement = double.Parse(this.StationDistanceTxt.Text);
 
-        //    return Stationincrement;
-        //}
         public double? ExtractStationPlacmentStart()
         {
             double StationPlaceMentStart = default(double);
-           
+
 
             return StationPlaceMentStart;
         }
@@ -104,6 +95,12 @@ namespace ObjectPlacementLandXml
         private void RevitBrowserClick(object sender, RoutedEventArgs e)
         {
             WindowDialogs.OpenDialogRev(FamilyPath);
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            TransForm = ExtractTransformParameters();
+            RevitPlaceMentPoints = LandXmlParser.ParseLandXml(LandXmlPath.Text);
         }
     }
 }
