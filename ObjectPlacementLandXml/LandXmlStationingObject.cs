@@ -42,6 +42,7 @@ namespace ObjectPlacementLandXml
 
         private void CreateRevitElement()
         {
+
             if (this.AlignmentSegmentElement is Line)
             {
                 Autodesk.Revit.DB.Line L = Autodesk.Revit.DB.Line.CreateBound(this.GetStartPoint(), this.GetEndPoint());
@@ -176,6 +177,7 @@ namespace ObjectPlacementLandXml
         {
             if (geomLine != null)
             {
+
                 XYZ dir = geomLine.Direction;
                 double x = dir.X, y = dir.Y, z = dir.Z;
                 XYZ n = new XYZ(z - y, x - z, y - x);
@@ -651,9 +653,17 @@ namespace ObjectPlacementLandXml
         }
         public static double ExtractHeightForPoint(double station, Alignment alignment)
         {
-            double Height = default(double);
             if (alignment != null)
             {
+                if (station > LandXmlParser.LandxmlHeighElements.Last().Range.Item2)
+                {
+                    station = LandXmlParser.LandxmlHeighElements.Last().Range.Item2;
+                }
+                if (station < LandXmlParser.LandxmlHeighElements.First().Range.Item1)
+                {
+                    station = LandXmlParser.LandxmlHeighElements.First().Range.Item1;
+
+                }
                 foreach (var HeightElements in LandXmlParser.LandxmlHeighElements)
                 {
                     if (station >= HeightElements.Range.Item1 && station <= HeightElements.Range.Item2)
@@ -667,7 +677,9 @@ namespace ObjectPlacementLandXml
                     }
                 }
             }
+
             return default(double);
+
 
 
         }

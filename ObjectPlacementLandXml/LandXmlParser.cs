@@ -283,6 +283,10 @@ namespace ObjectPlacementLandXml
                 {
                     foreach (object CoordGeoItem in CoordGeom.Items)
                     {
+                        if (Alignment.name.ToLower() == "NL_SMA_Pilotlager_Zugang".ToLower())
+                        {
+
+                        }
                         var LandXmlAlignMentObj = new LandXmlStationingObject(ObjectStation, CoordGeoItem, Alignment);
                         Objects.Add(LandXmlAlignMentObj);
 
