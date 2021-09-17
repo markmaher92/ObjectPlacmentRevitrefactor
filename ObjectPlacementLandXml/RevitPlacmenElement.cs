@@ -26,7 +26,7 @@ namespace ObjectPlacementLandXml
         {
             if (PointToConvert != null)
             {
-                var ConvetedPoint = new XYZ(UnitUtils.ConvertToInternalUnits(PointToConvert.X, DisplayUnitType.DUT_METERS), UnitUtils.ConvertToInternalUnits(PointToConvert.Y, DisplayUnitType.DUT_METERS), UnitUtils.ConvertToInternalUnits(PointToConvert.Z, DisplayUnitType.DUT_METERS));
+                var ConvetedPoint = new XYZ(UnitUtils.ConvertToInternalUnits(PointToConvert.X, UnitTypeId.Meters), UnitUtils.ConvertToInternalUnits(PointToConvert.Y, UnitTypeId.Meters), UnitUtils.ConvertToInternalUnits(PointToConvert.Z, UnitTypeId.Meters));
                 return ConvetedPoint;
             }
             return null;
@@ -35,7 +35,7 @@ namespace ObjectPlacementLandXml
         {
             if (DoubleToConvert != default(double))
             {
-                var ConvetedPoint = UnitUtils.ConvertToInternalUnits(DoubleToConvert, DisplayUnitType.DUT_METERS);
+                var ConvetedPoint = UnitUtils.ConvertToInternalUnits(DoubleToConvert, UnitTypeId.Meters);
                 return ConvetedPoint;
             }
             return default(double);
@@ -44,7 +44,7 @@ namespace ObjectPlacementLandXml
         {
             if (AngleToConvert != default(double))
             {
-                var ConvetedPoint = UnitUtils.ConvertToInternalUnits(AngleToConvert, DisplayUnitType.DUT_DEGREES_AND_MINUTES);
+                var ConvetedPoint = UnitUtils.ConvertToInternalUnits(AngleToConvert, UnitTypeId.DegreesMinutes);
                 return ConvetedPoint;
             }
             return default(double);

@@ -78,12 +78,14 @@ namespace ObjectPlacementLandXml
 
                     if (transform.RotationAngleInPlane > 0)
                     {
-                        Double Angle = UnitUtils.ConvertToInternalUnits(transform.RotationAngleInPlane, DisplayUnitType.DUT_DEGREES_AND_MINUTES);
+                        
+                        Double Angle = UnitUtils.ConvertToInternalUnits(transform.RotationAngleInPlane, UnitTypeId.DegreesMinutes);
                         ElementTransformUtils.RotateElement(uiDoc.Document, CreatedInstances[i].Item1.Id, NeuRotationLineZ, Angle);
                     }
                     if (transform.ElevationFromAlignment != default(double))
                     {
-                        double Z = UnitUtils.ConvertToInternalUnits(transform.ElevationFromAlignment, DisplayUnitType.DUT_MILLIMETERS);
+                        
+                        double Z = UnitUtils.ConvertToInternalUnits(transform.ElevationFromAlignment, UnitTypeId.Millimeters);
                         ElementTransformUtils.MoveElement(uiDoc.Document, CreatedInstances[i].Item1.Id, new XYZ(0,0,Z));
                     }
                     if (transform.InclinationAngleInXZPlane != default(double))
@@ -94,7 +96,7 @@ namespace ObjectPlacementLandXml
                     }
                     if (transform.HorizontalDistance != default(double))
                     {
-                        double HorizontalDistance = UnitUtils.ConvertToInternalUnits(transform.HorizontalDistance, DisplayUnitType.DUT_MILLIMETERS);
+                        double HorizontalDistance = UnitUtils.ConvertToInternalUnits(transform.HorizontalDistance, UnitTypeId.Millimeters);
 
                         var NewLocation = new XYZ(0, HorizontalDistance, 0);
                         ElementTransformUtils.MoveElement(uiDoc.Document, CreatedInstances[i].Item1.Id, NewLocation);
@@ -163,7 +165,7 @@ namespace ObjectPlacementLandXml
             }
             if (transform.RotationAngleInPlane != default(double))
             {
-                Double RotationAngle = UnitUtils.ConvertToInternalUnits(transform.RotationAngleInPlane, DisplayUnitType.DUT_DEGREES_AND_MINUTES);
+                Double RotationAngle = UnitUtils.ConvertToInternalUnits(transform.RotationAngleInPlane, UnitTypeId.DegreesMinutes);
                 var LocatioNPoint = (famIns.Location as LocationPoint).Point;
                 var Line2 = Autodesk.Revit.DB.Line.CreateBound(LocatioNPoint, LocatioNPoint.Add(new XYZ(LocatioNPoint.X, LocatioNPoint.Y, LocatioNPoint.Z + 100)));
                 ElementTransformUtils.RotateElement(document, famIns.Id, Line2, RotationAngle);

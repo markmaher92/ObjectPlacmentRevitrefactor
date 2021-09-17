@@ -51,10 +51,20 @@ namespace ObjectPlacementLandXml
                 {
                     try
                     {
-                        var ConvertedPointStart = RevitPlacmenElement.ConvertPointToInternal(this.GetStartPoint());
-                        var ConvertedEndPoint = RevitPlacmenElement.ConvertPointToInternal(this.GetEndPoint());
+                        //#HeightEdit
+                        var StartPoint = this.GetStartPoint();
+                        var StartPointWithZ = new XYZ(StartPoint.X, StartPoint.Y, LandXmlStationingObject.ExtractHeightForPoint(Station, Alignment));
+                        var EndPoint = this.GetEndPoint();
+                        var EndPointWithZ = new XYZ(EndPoint.X, EndPoint.Y, LandXmlStationingObject.ExtractHeightForPoint(EndStation, Alignment));
+                        var ConvertedPointStart = RevitPlacmenElement.ConvertPointToInternal(StartPointWithZ);
+                        var ConvertedEndPoint = RevitPlacmenElement.ConvertPointToInternal(EndPointWithZ);
+
+                        //var ConvertedPointStart = RevitPlacmenElement.ConvertPointToInternal(this.GetStartPoint());
+                        //var ConvertedEndPoint = RevitPlacmenElement.ConvertPointToInternal(this.GetEndPoint());
+
+
                         Autodesk.Revit.DB.Line ConvrtedLine = Autodesk.Revit.DB.Line.CreateBound(ConvertedPointStart, ConvertedEndPoint);
-                        RevitModelCurve  = CreateRevitElementInRevit(ConvrtedLine);
+                        RevitModelCurve = CreateRevitElementInRevit(ConvrtedLine);
                     }
                     catch (Exception)
                     {
@@ -83,11 +93,18 @@ namespace ObjectPlacementLandXml
                 {
                     try
                     {
-                        var ConvertedPointStart = RevitPlacmenElement.ConvertPointToInternal(this.GetStartPoint());
-                        var ConvertedEndPoint = RevitPlacmenElement.ConvertPointToInternal(this.GetEndPoint());
+                        //#HeightEdit
+                        var StartPointWithZ = new XYZ(StartPoint.X, StartPoint.Y, LandXmlStationingObject.ExtractHeightForPoint(Station, Alignment));
+                        var EndPointWithZ = new XYZ(EndPoint.X, EndPoint.Y, LandXmlStationingObject.ExtractHeightForPoint(EndStation, Alignment));
+
+                        var ConvertedPointStart = RevitPlacmenElement.ConvertPointToInternal(StartPointWithZ);
+                        var ConvertedEndPoint = RevitPlacmenElement.ConvertPointToInternal(EndPointWithZ);
+
+                        //var ConvertedPointStart = RevitPlacmenElement.ConvertPointToInternal(this.GetStartPoint());
+                        //var ConvertedEndPoint = RevitPlacmenElement.ConvertPointToInternal(this.GetEndPoint());
                         var ConvertedRadius = RevitPlacmenElement.ConvertDoubleToInternal(Radius);
                         Arc ConcertedCurve = CreateArc(ConvertedPointStart, ConvertedEndPoint, ConvertedRadius, (bool)false);
-                        RevitModelCurve = CreateRevitElementInRevit(ConcertedCurve);
+                        RevitModelCurve = CreateRevitElementInRevitARC(ConcertedCurve);
                     }
                     catch (Exception)
                     {
@@ -99,8 +116,10 @@ namespace ObjectPlacementLandXml
             }
             if (this.AlignmentSegmentElement is Spiral)
             {
+                //# HeightEdit
+                Double Step;
                 var Sp = (this.AlignmentSegmentElement as Spiral);
-                var NurbsSpline = CreateaSpiral(Sp);
+                var NurbsSpline = CreateaSpiral(Sp, out Step);
                 RevitSegmentElement = NurbsSpline;
 
                 if ((bool)ObjectPlacement.TransForm.CreateAlignment)
@@ -108,15 +127,21 @@ namespace ObjectPlacementLandXml
                     try
                     {
                         List<XYZ> ConvertedPoints = new List<XYZ>();
+                        int I = 0;
                         foreach (XYZ item in NurbsSpline.CtrlPoints)
                         {
-                            var ConvertedPointStart = RevitPlacmenElement.ConvertPointToInternal(item);
+                            var ZHeight = LandXmlStationingObject.ExtractHeightForPoint(this.Station + (I * Step), this.Alignment);
+                            XYZ PointwithZ = new XYZ(item.X, item.Y, ZHeight);
+                            //var ConvertedPointStart = RevitPlacmenElement.ConvertPointToInternal(item);
+                            var ConvertedPointStart = RevitPlacmenElement.ConvertPointToInternal(PointwithZ);
 
                             ConvertedPoints.Add(ConvertedPointStart);
+                            I++;
                         }
                         List<double> Weights = Enumerable.Repeat(1.0, ConvertedPoints.Count).ToList();
                         var ConvertedNurbsCurve = NurbSpline.CreateCurve(ConvertedPoints, Weights);
-                        RevitModelCurve = CreateRevitElementInRevit(ConvertedNurbsCurve);
+
+                        RevitModelCurve = CreateRevitElementInRevitNurbsLine(ConvertedNurbsCurve as NurbSpline);
                     }
                     catch (Exception)
                     {
@@ -134,28 +159,98 @@ namespace ObjectPlacementLandXml
 
         }
 
-        private static ModelCurve CreateRevitElementInRevit(Autodesk.Revit.DB.Curve geomLine)
+        //private static ModelCurve CreateRevitElementInRevit(Autodesk.Revit.DB.Curve geomLine)
+        //{
+        //    var Origin = geomLine.GetEndPoint(0);
+
+        //    Plane geomPlane = Plane.CreateByNormalAndOrigin(XYZ.BasisZ, new XYZ(0, 0, 0));
+        //    SketchPlane sketch = SketchPlane.Create(Command.uidoc.Document, geomPlane);
+
+        //    ElementTransformUtils.MoveElement(Command.uidoc.Document, sketch.Id, Origin);
+        //    ModelCurve line = Command.uidoc.Document.Create.NewModelCurve(geomLine, sketch);
+
+
+        //    return line;
+        //}
+        private static ModelCurve CreateRevitElementInRevit(Autodesk.Revit.DB.Line geomLine)
         {
-            // var OriginShit = geomLine.ComputeDerivatives(0, true);
-            //var normal = OriginShit.BasisZ;
-            // var origin = OriginShit.Origin;
-            // XYZ origin = new XYZ(0, 0, 0);
-            // XYZ normal = new XYZ(0, 1, 0);
-            var Origin = geomLine.GetEndPoint(0);
+            if (geomLine != null)
+            {
+                XYZ dir = geomLine.Direction;
+                double x = dir.X, y = dir.Y, z = dir.Z;
+                XYZ n = new XYZ(z - y, x - z, y - x);
 
-            //Plane geomPlane = Plane.CreateByNormalAndOrigin(XYZ.BasisZ, Origin);
-            Plane geomPlane = Plane.CreateByNormalAndOrigin(XYZ.BasisZ, new XYZ(0, 0, 0));
-            // Create a sketch plane in current document
-            SketchPlane sketch = SketchPlane.Create(Command.uidoc.Document, geomPlane);
+                var Origin = geomLine.GetEndPoint(0);
 
-            ElementTransformUtils.MoveElement(Command.uidoc.Document, sketch.Id, Origin);
-            // Create a ModelLine element using the created geometry line and sketch plane
-            ModelCurve line = Command.uidoc.Document.Create.NewModelCurve(geomLine, sketch);
+                Plane geomPlane = Plane.CreateByNormalAndOrigin(n, new XYZ(0, 0, 0));
+                SketchPlane sketch = SketchPlane.Create(Command.uidoc.Document, geomPlane);
 
-            return line;
+                ElementTransformUtils.MoveElement(Command.uidoc.Document, sketch.Id, Origin);
+                ModelCurve line = Command.uidoc.Document.Create.NewModelCurve(geomLine, sketch);
+
+                return line;
+            }
+            return null;
         }
+        private static ModelCurve CreateRevitElementInRevitARC(Autodesk.Revit.DB.Arc geomLine)
+        {
 
-        private Autodesk.Revit.DB.NurbSpline CreateaSpiral(Spiral Sp)
+            if (geomLine != null)
+            {
+                var Origin = geomLine.Center;
+
+                Plane geomPlane = Plane.CreateByNormalAndOrigin(geomLine.Normal, new XYZ(0, 0, 0));
+                SketchPlane sketch = SketchPlane.Create(Command.uidoc.Document, geomPlane);
+
+                ElementTransformUtils.MoveElement(Command.uidoc.Document, sketch.Id, Origin);
+                ModelCurve line = Command.uidoc.Document.Create.NewModelCurve(geomLine, sketch);
+                return line;
+
+            }
+            return null;
+
+        }
+        private static ModelCurve CreateRevitElementInRevitNurbsLine(Autodesk.Revit.DB.NurbSpline geomLine)
+        {
+            if (geomLine != null)
+            {
+                //XYZ origin = geomLine.GetEndPoint(0);
+                //XYZ normal = geomLine.ComputeDerivatives(0, true).BasisZ.Normalize();
+
+                //Plane geomPlane = Plane.CreateByNormalAndOrigin(normal, new XYZ(0, 0, 0));
+                //SketchPlane sketch = SketchPlane.Create(Command.uidoc.Document, geomPlane);
+
+                //ElementTransformUtils.MoveElement(Command.uidoc.Document, sketch.Id, origin);
+                //ModelCurve line = Command.uidoc.Document.Create.NewModelCurve(geomLine, sketch);
+
+                StringBuilder sb = new StringBuilder();
+                XYZ origin = geomLine.GetEndPoint(0);
+                XYZ point1 = geomLine.GetEndPoint(1);
+                XYZ direction = point1.Subtract(origin).Normalize();
+                double distance = 0;
+                XYZ Ydir = direction.IsAlmostEqualTo(XYZ.BasisZ) ? XYZ.BasisX : XYZ.BasisZ;
+                XYZ normal = direction.CrossProduct(Ydir).CrossProduct(direction);
+
+                SketchPlane skPlane = null;
+
+                skPlane = SketchPlane.Create(Command.uidoc.Document, Plane.CreateByNormalAndOrigin(normal, origin));
+                normal = skPlane.GetPlane().Normal;
+                IList<XYZ> newCntrlPoints = new List<XYZ>();
+                foreach (XYZ point in geomLine.CtrlPoints)
+                {
+                    distance = normal.DotProduct(point.Subtract(origin));
+                    newCntrlPoints.Add(point.Subtract(normal.Multiply(distance)));
+                    sb.AppendLine(string.Format("{0:f8}  {1}", distance, point));
+                }
+                geomLine.SetControlPointsAndWeights(newCntrlPoints, geomLine.Weights);
+
+                ModelCurve cv = Command.uidoc.Document.Create.NewModelCurve(geomLine, skPlane);
+
+                return cv;
+            }
+            return null;
+        }
+        private Autodesk.Revit.DB.NurbSpline CreateaSpiral(Spiral Sp, out Double step)
         {
             var Splength = Sp.length;
             var spEndRadius = Sp.radiusEnd;
@@ -191,11 +286,9 @@ namespace ObjectPlacementLandXml
             // double SubDivisions = Math.Round((Splength / ObjectPlacement.Stationincrement));
             //Change
             double SubDivisions = Math.Round((Splength * 20));
-            var step = tao / SubDivisions;
+            step = tao / SubDivisions;
 
             List<XYZ> ControlPoints = new List<XYZ>();
-
-
 
             for (double i = 0.0; i < tao; i = i + step)
             {
@@ -245,12 +338,15 @@ namespace ObjectPlacementLandXml
             return RotatedCurve;
         }
 
+        //Height_FIX_REVIEW
         public XYZ GetStartPoint()
         {
             XYZ StartPoint = null;
             if (this.AlignmentSegmentElement is Line)
             {
                 StartPoint = ExtractPoint((this.AlignmentSegmentElement as Line).Start);
+                //double Height = LandXmlStationingObject.ExtractHeightForPoint(this.Station, this.Alignment);
+                //StartPoint = new XYZ(StartPoint.X, StartPoint.Y, Height);
             }
             if (this.AlignmentSegmentElement is IrregularLine)
             {
@@ -259,11 +355,15 @@ namespace ObjectPlacementLandXml
             if (this.AlignmentSegmentElement is Curve)
             {
                 StartPoint = ExtractPoint((this.AlignmentSegmentElement as Curve).Items[0] as PointType);
+                //double Height = LandXmlStationingObject.ExtractHeightForPoint(this.Station, this.Alignment);
+                //StartPoint = new XYZ(StartPoint.X, StartPoint.Y, Height);
             }
             if (this.AlignmentSegmentElement is Spiral)
             {
                 //review    
                 StartPoint = ExtractPoint((this.AlignmentSegmentElement as Spiral).Items[0] as PointType);
+                //double Height = LandXmlStationingObject.ExtractHeightForPoint(this.Station, this.Alignment);
+                //StartPoint = new XYZ(StartPoint.X, StartPoint.Y, Height);
             }
             if (this.AlignmentSegmentElement is Chain)
             {
@@ -281,6 +381,8 @@ namespace ObjectPlacementLandXml
             if (this.AlignmentSegmentElement is Line)
             {
                 EndPoint = ExtractPoint((this.AlignmentSegmentElement as Line).End);
+                //double Height = LandXmlStationingObject.ExtractHeightForPoint(this.EndStation, this.Alignment);
+                //EndPoint = new XYZ(EndPoint.X, EndPoint.Y, Height);
             }
             if (this.AlignmentSegmentElement is IrregularLine)
             {
@@ -289,11 +391,15 @@ namespace ObjectPlacementLandXml
             if (this.AlignmentSegmentElement is Curve)
             {
                 EndPoint = ExtractPoint((this.AlignmentSegmentElement as Curve).Items[2] as PointType);
+                //double Height = LandXmlStationingObject.ExtractHeightForPoint(this.EndStation, this.Alignment);
+                //EndPoint = new XYZ(EndPoint.X, EndPoint.Y, Height);
             }
             if (this.AlignmentSegmentElement is Spiral)
             {
                 //review    
                 EndPoint = ExtractPoint((this.AlignmentSegmentElement as Spiral).Items[2] as PointType);
+                //double Height = LandXmlStationingObject.ExtractHeightForPoint(this.EndStation, this.Alignment);
+                //EndPoint = new XYZ(EndPoint.X, EndPoint.Y, Height);
             }
             if (this.AlignmentSegmentElement is Chain)
             {

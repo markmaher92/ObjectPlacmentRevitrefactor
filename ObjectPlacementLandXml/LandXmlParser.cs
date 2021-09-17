@@ -39,9 +39,10 @@ namespace ObjectPlacementLandXml
                 {
                     //stationing
                     List<double> Stations = CreateStationing(ObjectPlacement.TransForm.DistanceBetweenStations, Alignment);
+                    LandxmlHeighElements = ExtractHeightElemenets(Alignment);
+
                     List<LandXmlStationingObject> LandXmlAlignmentObjects = ExtractStationingObjects(Alignment, Stations);
 
-                    LandxmlHeighElements = ExtractHeightElemenets(Alignment);
                     //Placment
                     ExtractPlacementPoints(Alignment, RevitPlacementPoints, Stations, LandXmlAlignmentObjects);
 
@@ -54,7 +55,7 @@ namespace ObjectPlacementLandXml
                         //ids.ToList().RemoveAll(EE => EE == null && EE.GetType() != typeof(ElementId));
                         if (FilteredIds.Any())
                         {
-                            Group G = Command.uidoc.Document.Create.NewGroup(ids.ToList());
+                            Group G = Command.uidoc.Document.Create.NewGroup(FilteredIds.ToList());
                             G.GroupType.Name = Alignment.name;
                            // G.Name = Alignment.name;
                         }
